@@ -1,0 +1,64 @@
+
+
+
+ARM Macro Assembler    Page 1 
+
+
+    1 00000000                 AREA             test1, CODE, READONLY
+    2 00000000         
+    3 00000000         fibonacci
+                               PROC
+    4 00000000                 EXPORT           fibonacci
+    5 00000000 4F0D            LDR              R7, =fibonacci
+    6 00000002 F04F 0400       MOV              R4, #0
+    7 00000006 6004            STR              R4, [R0]
+    8 00000008 F100 0004       ADD              R0, R0, #4
+    9 0000000C F104 0401       ADD              R4, R4, #1
+   10 00000010 6004            STR              R4, [R0]
+   11 00000012 F107 0718       ADD              R7, R7, #24
+   12 00000016 F04F 0802       MOV              R8, #2
+   13 0000001A F100 0004       ADD              R0, R0, #4
+   14 0000001E F850 5C04       LDR              R5, [R0, #-4]
+   15 00000022 F850 6C08       LDR              R6, [R0, #-8]
+   16 00000026 442E            ADD              R6, R6, R5
+   17 00000028 6006            STR              R6, [R0]
+   18 0000002A F108 0801       ADD              R8, R8, #1
+   19 0000002E 4588            CMP              R8, R1
+   20 00000030 BF08 4677       MOVEQ            R7, LR
+   21 00000034 4738            BX               R7
+   22 00000036                 ENDP
+   23 00000036                 END
+              00 00 00000000 
+Command Line: --debug --xref --cpu=Cortex-M4.fp --apcs=interwork --depend=.\fla
+sh\test.d -o.\flash\test.o -I"C:\Users\crrl-user1\Google Drive\NYU-Poly\CRRL\TA
+ EE4144\Lab3\Lab ADC Temp\RTE" -I"C:\Users\crrl-user1\Google Drive\NYU-Poly\CRR
+L\TA EE4144\Lab3\Lab ADC Temp\RTE\Device\STM32F407VG" -IC:\Keil_v5\ARM\PACK\ARM
+\CMSIS\4.1.1\CMSIS\Include -IC:\Keil_v5\ARM\PACK\Keil\STM32F4xx_DFP\1.0.8\Devic
+e\Include -IC:\Keil_v5\ARM\PACK\Keil\STM32F4xx_DFP\1.0.8\Device\StdPeriph_Drive
+r\inc --predefine="__EVAL SETA 1" --predefine="__MICROLIB SETA 1" --list=.\flas
+h\test.lst test.s
+
+
+
+ARM Macro Assembler    Page 1 Alphabetic symbol ordering
+Relocatable symbols
+
+fibonacci 00000000
+
+Symbol: fibonacci
+   Definitions
+      At line 3 in file test.s
+   Uses
+      At line 4 in file test.s
+      At line 5 in file test.s
+
+test1 00000000
+
+Symbol: test1
+   Definitions
+      At line 1 in file test.s
+   Uses
+      None
+Comment: test1 unused
+2 symbols
+337 symbols in table

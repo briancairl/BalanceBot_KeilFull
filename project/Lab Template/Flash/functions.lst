@@ -1,0 +1,436 @@
+
+
+
+ARM Macro Assembler    Page 1 
+
+
+    1 00000000                 AREA             example1, CODE, READONLY
+    2 00000000         
+    3 00000000         SysTick_Handler
+                               PROC
+    4 00000000         ; Declare function
+    5 00000000                 EXPORT           SysTick_Handler
+    6 00000000         ; Declare label of function not defined in file
+    7 00000000                 IMPORT           msTicks
+    8 00000000         ; Load address of msTicks variable
+    9 00000000 4830            LDR              R0, =msTicks
+   10 00000002         ; Load contents of msTicks
+   11 00000002 6801            LDR              R1, [R0]
+   12 00000004         ; Increment value
+   13 00000004 F101 0101       ADD              R1, R1, #1
+   14 00000008         ; Store back to msTicks
+   15 00000008 6001            STR              R1, [R0]
+   16 0000000A         ; Branch back to caller
+   17 0000000A 4770            BX               LR
+   18 0000000C                 ENDP
+   19 0000000C         
+   20 0000000C         ; Squares generator
+   21 0000000C         square_elements
+                               PROC
+   22 0000000C                 EXPORT           square_elements
+   23 0000000C         ; Address of first element of the vector is
+   24 0000000C         ; stored in R0
+   25 0000000C         ; n is stored in R1
+   26 0000000C         ; Use R2 as accumulator
+   27 0000000C         
+   28 0000000C         ; Initialize accumulator
+   29 0000000C F04F 0200       MOV              R2, #0
+   30 00000010         SQUARE_ELEMENTS_LOOP_TOP
+   31 00000010         ; Is R2 equal to n?
+   32 00000010 428A            CMP              R2, R1
+   33 00000012         ; If it is, exit
+   34 00000012 BF08 4770       BXEQ             LR
+   35 00000016         ; Let R3 hold the value to be stored
+   36 00000016         ; Square the index
+   37 00000016 FB02 F302       MUL              R3, R2, R2
+   38 0000001A         ; Store the value in the array, then increment the array
+                        pointer
+   39 0000001A F840 3B04       STR              R3, [R0], #4
+   40 0000001E         ; Increment accumulator
+   41 0000001E F102 0201       ADD              R2, R2, #1
+   42 00000022 E7F5            B                SQUARE_ELEMENTS_LOOP_TOP
+   43 00000024                 ENDP
+   44 00000024         
+   45 00000024         ; Fibonacci generator
+   46 00000024         fibonacci
+                               PROC
+   47 00000024                 EXPORT           fibonacci
+   48 00000024         ; Address of first element of the vector is
+   49 00000024         ; stored in R0
+   50 00000024         ; n is stored in R1
+   51 00000024         ; Use R2 as accumulator
+   52 00000024         
+   53 00000024         ; Initialize accumulator
+   54 00000024 F04F 0202       MOV              R2, #2
+   55 00000028         ; Use R3 to store n   value
+
+
+
+ARM Macro Assembler    Page 2 
+
+
+   56 00000028         ; Use R4 to store n-1 value
+   57 00000028         ; Use R5 to store n-2 value
+   58 00000028 B430            PUSH             {R4,R5}
+   59 0000002A F04F 0401       MOV              R4, #1
+   60 0000002E F04F 0500       MOV              R5, #0
+   61 00000032         ; Store the first two fibonacci numbers in the array
+   62 00000032 F840 5B04       STR              R5, [R0], #4
+   63 00000036 F840 4B04       STR              R4, [R0], #4
+   64 0000003A         FIBONACCI_LOOP_TOP
+   65 0000003A         ; Is R2 equal to n?
+   66 0000003A 428A            CMP              R2, R1
+   67 0000003C         ; If it is, exit
+   68 0000003C D008            BEQ              FIBONACCI_EXIT
+   69 0000003E         ; Calculate fibonacci value
+   70 0000003E EB04 0305       ADD              R3, R4, R5
+   71 00000042         ; Store the value in the array, then increment the array
+                        pointer
+   72 00000042 F840 3B04       STR              R3, [R0], #4
+   73 00000046         ; Shift values
+   74 00000046 4625            MOV              R5, R4
+   75 00000048 461C            MOV              R4, R3
+   76 0000004A         ; Increment accumulator
+   77 0000004A F102 0201       ADD              R2, R2, #1
+   78 0000004E E7F4            B                FIBONACCI_LOOP_TOP
+   79 00000050         
+   80 00000050         FIBONACCI_EXIT
+   81 00000050         ; Restore R4, R5
+   82 00000050 BC30            POP              {R5,R4}
+   83 00000052 4770            BX               LR
+   84 00000054                 ENDP
+   85 00000054         
+   86 00000054         inner_product
+                               PROC
+   87 00000054                 EXPORT           inner_product
+   88 00000054         ; Address of first element of vector a is
+   89 00000054         ; stored in R0
+   90 00000054         ; Address of first element of vector b is
+   91 00000054         ; stored in R1
+   92 00000054         ; n is stored in R2
+   93 00000054         ; R3 is the accumulator
+   94 00000054         ; Use R4, R5, R6 for calculations
+   95 00000054         
+   96 00000054         ; Initialize accumulator
+   97 00000054 F04F 0300       MOV              R3, #0
+   98 00000058         ; Use R4 to store result
+   99 00000058         ; Use R5 to store elements from a
+  100 00000058         ; Use R6 to store elements from b
+  101 00000058 B470            PUSH             {R4,R5,R6}
+  102 0000005A         ; Initialize R4
+  103 0000005A F04F 0400       MOV              R4, #0
+  104 0000005E         INNER_PRODUCT_LOOP_TOP
+  105 0000005E         ; Is R3 equal to n?
+  106 0000005E 4293            CMP              R3, R2
+  107 00000060         ; If it is, exit
+  108 00000060 D008            BEQ              INNER_PRODUCT_EXIT
+  109 00000062         ; Load elements from a and b, then increment the array p
+                       ointer (post increment)
+  110 00000062 F850 5B04       LDR              R5, [R0], #4
+  111 00000066 F851 6B04       LDR              R6, [R1], #4
+
+
+
+ARM Macro Assembler    Page 3 
+
+
+  112 0000006A         ; R4 holds the result
+  113 0000006A         ; R4 = R5*R6 + R4
+  114 0000006A FB05 4406       MLA              R4, R5, R6, R4
+  115 0000006E         ; Increment accumulator
+  116 0000006E F103 0301       ADD              R3, R3, #1
+  117 00000072 E7F4            B                INNER_PRODUCT_LOOP_TOP
+  118 00000074         INNER_PRODUCT_EXIT
+  119 00000074         ; Store result in R0
+  120 00000074 4620            MOV              R0, R4
+  121 00000076         ; Restore R4, R5, R6
+  122 00000076 BC70            POP              {R6,R5,R4}
+  123 00000078 4770            BX               LR
+  124 0000007A                 ENDP
+  125 0000007A         
+  126 0000007A         f_inner_product
+                               PROC
+  127 0000007A                 EXPORT           f_inner_product
+  128 0000007A         ; Address of first element of vector a is
+  129 0000007A         ; stored in R0
+  130 0000007A         ; Address of first element of vector b is
+  131 0000007A         ; stored in R1
+  132 0000007A         ; n is stored in R2
+  133 0000007A         ; R3 is the accumulator
+  134 0000007A         ; Use S0, S1, S2 for calculations
+  135 0000007A         
+  136 0000007A         ; Initialize accumulator
+  137 0000007A F04F 0300       MOV              R3, #0
+  138 0000007E         ; Use S0 to store result
+  139 0000007E         ; Use S1 to store elements from a
+  140 0000007E         ; Use S2 to store elements from b
+  141 0000007E         
+  142 0000007E         ; Initialize S2
+  143 0000007E EE00 3A10       VMOV.F32         S0, R3
+  144 00000082         F_INNER_PRODUCT_LOOP_TOP
+  145 00000082         ; Is R3 equal to n?
+  146 00000082 4293            CMP              R3, R2
+  147 00000084         ; If it is, exit
+  148 00000084 D008            BEQ              F_INNER_PRODUCT_EXIT
+  149 00000086         ; Load elements from a and b, then increment the array p
+                       ointer (post increment)
+  150 00000086 ECF0 0A01       VLDR.32          S1, [R0], #4
+  151 0000008A ECB1 1A01       VLDR.32          S2, [R1], #4
+  152 0000008E         ; S0 = S1*S2 + S0
+  153 0000008E EEA0 0A81       VFMA.F32         S0, S1, S2
+  154 00000092         ; Increment accumulator
+  155 00000092 F103 0301       ADD              R3, R3, #1
+  156 00000096 E7F4            B                F_INNER_PRODUCT_LOOP_TOP
+  157 00000098         F_INNER_PRODUCT_EXIT
+  158 00000098         ; The result is stored in S0
+  159 00000098 4770            BX               LR
+  160 0000009A                 ENDP
+  161 0000009A         
+  162 0000009A         
+  163 0000009A         blink   PROC
+  164 0000009A         ; Declare function and declare labels of
+  165 0000009A         ; variables and functions not defined in file
+  166 0000009A                 EXPORT           blink
+  167 0000009A                 IMPORT           msTicks
+  168 0000009A                 IMPORT           msPrev
+
+
+
+ARM Macro Assembler    Page 4 
+
+
+  169 0000009A                 IMPORT           LED_state
+  170 0000009A                 IMPORT           LED_Out
+  171 0000009A         
+  172 0000009A         ; Load contents of msTicks into R3
+  173 0000009A 490A            LDR              R1, =msTicks
+  174 0000009C 6809            LDR              R1, [R1]
+  175 0000009E         ; Load contents of msPrev into R4
+  176 0000009E 4A0A            LDR              R2, =msPrev
+  177 000000A0 6813            LDR              R3, [R2]
+  178 000000A2         ; msTicks - msPrev
+  179 000000A2 1ACB            SUBS             R3, R1, R3
+  180 000000A4         ; R3 >= R0
+  181 000000A4 BFA8 4283       CMPGE            R3, R0
+  182 000000A8         ; If true, branch to label Blink_LED
+  183 000000A8 DA00            BGE              Blink_LED
+  184 000000AA         ; Else, return
+  185 000000AA 4770            BX               LR
+  186 000000AC         
+  187 000000AC         ; Update msPrev and toggle LED state
+  188 000000AC         Blink_LED
+  189 000000AC         ; Store contents of msTicks into msPrev
+  190 000000AC 6011            STR              R1, [R2]
+  191 000000AE         ; Load contents of LED_state into R0
+  192 000000AE         ; R0 is used so it can be later used
+  193 000000AE         ; as an argument to the next function call
+  194 000000AE 4907            LDR              R1, =LED_state
+  195 000000B0 6808            LDR              R0, [R1]
+  196 000000B2         ; Toggle the LED state
+  197 000000B2 F080 000F       EOR              R0, R0, #0xF
+  198 000000B6         ; Store the result back to the LED_state variable
+  199 000000B6 6008            STR              R0, [R1]
+  200 000000B8         ; Store the Link Register
+  201 000000B8 B500            PUSH             {LR}
+  202 000000BA         ; Call the LED_Out function
+  203 000000BA F8DF C014       LDR              R12, =LED_Out
+  204 000000BE 47E0            BLX              R12
+  205 000000C0         ; Return to caller
+  206 000000C0 BD00            POP              {PC}
+  207 000000C2         
+  208 000000C2                 ENDP
+  209 000000C2                 END
+              00 00 00000000 
+              00000000 
+              00000000 
+              00000000 
+Command Line: --debug --xref --cpu=Cortex-M4.fp --apcs=interwork --depend=.\fla
+sh\functions.d -o.\flash\functions.o -I"C:\Users\crrl-user1\Google Drive\NYU-Po
+ly\CRRL\TA EE4144\Lab3\Lab\RTE" -I"C:\Users\crrl-user1\Google Drive\NYU-Poly\CR
+RL\TA EE4144\Lab3\Lab\RTE\Device\STM32F407VG" -IC:\Keil_v5\ARM\PACK\ARM\CMSIS\4
+.1.1\CMSIS\Include -IC:\Keil_v5\ARM\PACK\Keil\STM32F4xx_DFP\1.0.8\Boards\ST\STM
+32F4-Discovery\Common -IC:\Keil_v5\ARM\PACK\Keil\STM32F4xx_DFP\1.0.8\Device\Inc
+lude -IC:\Keil_v5\ARM\PACK\Keil\STM32F4xx_DFP\1.0.8\RTE_Driver --predefine="__E
+VAL SETA 1" --predefine="__MICROLIB SETA 1" --list=.\flash\functions.lst functi
+ons.s
+
+
+
+ARM Macro Assembler    Page 1 Alphabetic symbol ordering
+Relocatable symbols
+
+Blink_LED 000000AC
+
+Symbol: Blink_LED
+   Definitions
+      At line 188 in file functions.s
+   Uses
+      At line 183 in file functions.s
+Comment: Blink_LED used once
+FIBONACCI_EXIT 00000050
+
+Symbol: FIBONACCI_EXIT
+   Definitions
+      At line 80 in file functions.s
+   Uses
+      At line 68 in file functions.s
+Comment: FIBONACCI_EXIT used once
+FIBONACCI_LOOP_TOP 0000003A
+
+Symbol: FIBONACCI_LOOP_TOP
+   Definitions
+      At line 64 in file functions.s
+   Uses
+      At line 78 in file functions.s
+Comment: FIBONACCI_LOOP_TOP used once
+F_INNER_PRODUCT_EXIT 00000098
+
+Symbol: F_INNER_PRODUCT_EXIT
+   Definitions
+      At line 157 in file functions.s
+   Uses
+      At line 148 in file functions.s
+Comment: F_INNER_PRODUCT_EXIT used once
+F_INNER_PRODUCT_LOOP_TOP 00000082
+
+Symbol: F_INNER_PRODUCT_LOOP_TOP
+   Definitions
+      At line 144 in file functions.s
+   Uses
+      At line 156 in file functions.s
+Comment: F_INNER_PRODUCT_LOOP_TOP used once
+INNER_PRODUCT_EXIT 00000074
+
+Symbol: INNER_PRODUCT_EXIT
+   Definitions
+      At line 118 in file functions.s
+   Uses
+      At line 108 in file functions.s
+Comment: INNER_PRODUCT_EXIT used once
+INNER_PRODUCT_LOOP_TOP 0000005E
+
+Symbol: INNER_PRODUCT_LOOP_TOP
+   Definitions
+      At line 104 in file functions.s
+   Uses
+      At line 117 in file functions.s
+Comment: INNER_PRODUCT_LOOP_TOP used once
+SQUARE_ELEMENTS_LOOP_TOP 00000010
+
+Symbol: SQUARE_ELEMENTS_LOOP_TOP
+
+
+
+ARM Macro Assembler    Page 2 Alphabetic symbol ordering
+Relocatable symbols
+
+   Definitions
+      At line 30 in file functions.s
+   Uses
+      At line 42 in file functions.s
+Comment: SQUARE_ELEMENTS_LOOP_TOP used once
+SysTick_Handler 00000000
+
+Symbol: SysTick_Handler
+   Definitions
+      At line 3 in file functions.s
+   Uses
+      At line 5 in file functions.s
+Comment: SysTick_Handler used once
+blink 0000009A
+
+Symbol: blink
+   Definitions
+      At line 163 in file functions.s
+   Uses
+      At line 166 in file functions.s
+Comment: blink used once
+example1 00000000
+
+Symbol: example1
+   Definitions
+      At line 1 in file functions.s
+   Uses
+      None
+Comment: example1 unused
+f_inner_product 0000007A
+
+Symbol: f_inner_product
+   Definitions
+      At line 126 in file functions.s
+   Uses
+      At line 127 in file functions.s
+Comment: f_inner_product used once
+fibonacci 00000024
+
+Symbol: fibonacci
+   Definitions
+      At line 46 in file functions.s
+   Uses
+      At line 47 in file functions.s
+Comment: fibonacci used once
+inner_product 00000054
+
+Symbol: inner_product
+   Definitions
+      At line 86 in file functions.s
+   Uses
+      At line 87 in file functions.s
+Comment: inner_product used once
+square_elements 0000000C
+
+Symbol: square_elements
+   Definitions
+      At line 21 in file functions.s
+   Uses
+
+
+
+ARM Macro Assembler    Page 3 Alphabetic symbol ordering
+Relocatable symbols
+
+      At line 22 in file functions.s
+Comment: square_elements used once
+15 symbols
+
+
+
+ARM Macro Assembler    Page 1 Alphabetic symbol ordering
+External symbols
+
+LED_Out 00000000
+
+Symbol: LED_Out
+   Definitions
+      At line 170 in file functions.s
+   Uses
+      At line 203 in file functions.s
+Comment: LED_Out used once
+LED_state 00000000
+
+Symbol: LED_state
+   Definitions
+      At line 169 in file functions.s
+   Uses
+      At line 194 in file functions.s
+Comment: LED_state used once
+msPrev 00000000
+
+Symbol: msPrev
+   Definitions
+      At line 168 in file functions.s
+   Uses
+      At line 176 in file functions.s
+Comment: msPrev used once
+msTicks 00000000
+
+Symbol: msTicks
+   Definitions
+      At line 7 in file functions.s
+      At line 167 in file functions.s
+   Uses
+      At line 9 in file functions.s
+      At line 173 in file functions.s
+Warning: msTicks multiply defined
+4 symbols
+354 symbols in table

@@ -1,0 +1,298 @@
+#include "sys.h"
+
+#define LAMBDA_BUFLEN	10
+
+typedef struct
+{
+	float32_t		gain;
+	float32_t 	in;
+	float32_t		out;
+	float32_t		scaling;
+	
+	float32_t 	bias;
+	uint32_t 		bias_n;
+	float32_t 	var;
+	uint32_t 		var_n;
+	
+} LambdaFilteredSen1f;
+
+
+void Init_LambdaFilteredSen1f( LambdaFilteredSen1f* lfs, float32_t gain, float32_t scaling )
+{	
+	lfs->out 			= 0.f;
+	lfs->bias 		= 0.f;
+	lfs->bias_n 	= 0UL;
+	
+	lfs->var			= 0UL;
+	lfs->var_n		= 0UL;
+	
+	lfs->gain 		= gain;
+	lfs->scaling	= scaling;
+}
+
+
+void Update_LambdaFilteredSen1f( LambdaFilteredSen1f* lfs, int16_t* data )
+{
+	lfs->out += lfs->gain*( lfs->scaling*((float32_t)*data) - lfs->out );
+}
+
+void NewBias_LambdaFilteredSen1f( LambdaFilteredSen1f* lfs )
+{
+	lfs->bias 	= 0.0f;
+	lfs->bias_n	= 0UL;
+}
+
+void SetBias_LambdaFilteredSen1f( LambdaFilteredSen1f* lfs, int16_t* data )
+{
+	lfs->bias += lfs->scaling*((float32_t)*data);
+	++lfs->bias_n;
+}
+
+void KeepBias_LambdaFilteredSen1f( LambdaFilteredSen1f* lfs )
+{
+	if(lfs->bias_n)
+		lfs->bias/=((float32_t)(lfs->bias_n));
+}
+
+void NewVar_LambdaFilteredSen1f( LambdaFilteredSen1f* lfs )
+{
+	lfs->var 		= 0.0f;
+	lfs->var_n	= 0UL;
+}
+
+void SetVar_LambdaFilteredSen1f( LambdaFilteredSen1f* lfs, int16_t* data )
+{
+	lfs->var += powf( ( lfs->scaling*((float32_t)*data) - lfs->bias ), 2.0f );
+	++lfs->var_n;
+}
+
+void KeepVar_LambdaFilteredSen1f( LambdaFilteredSen1f* lfs )
+{	
+	if(lfs->var_n>1UL)
+		lfs->var /=((float32_t)(lfs->var_n-1UL));
+}
+
+
+/*****************************************************************************************************/
+
+
+static struct SYS_x
+{
+	struct TIME_x
+	{
+		uint32_t 		ticks[2U];
+		float32_t 	time;
+	} Time;	
+	
+	struct IMU_x
+	{	SYS_TIMED_ITEM_IMPL
+		LambdaFilteredSen1f	gyr_out[3U];
+		LambdaFilteredSen1f	acc_out[3U];		
+		LSM9DS0_t						hw_base;
+	} Imu;
+	
+	struct MOTORS_x
+	{	SYS_TIMED_ITEM_IMPL
+		float32_t		omega_l;
+		float32_t		omega_r;
+	} Motors;
+	
+	struct CMD_x
+	{	SYS_TIMED_ITEM_IMPL
+		float32_t 	dt;
+		float32_t		pitch;
+	} Cmd;
+	
+} Sys;
+
+
+
+void __SysInitIMU()
+{
+	uint32_t itr, jtr;
+	
+	LSM9DS0_Init (&Sys.Imu.hw_base,MODE_SPI,0,0);
+	LSM9DS0_begin(&Sys.Imu.hw_base, NULL );
+	
+	for( itr = 0UL; itr < 3UL; itr++ ) 
+	{
+		Init_LambdaFilteredSen1f(Sys.Imu.acc_out+itr,0.1f,6.66e-4f);
+		Init_LambdaFilteredSen1f(Sys.Imu.gyr_out+itr,0.1f,1.00e-2f);
+		
+		NewBias_LambdaFilteredSen1f	(Sys.Imu.acc_out+itr);
+		NewBias_LambdaFilteredSen1f	(Sys.Imu.gyr_out+itr);
+		
+		NewVar_LambdaFilteredSen1f	(Sys.Imu.acc_out+itr);
+		NewVar_LambdaFilteredSen1f	(Sys.Imu.gyr_out+itr);
+	}
+	
+	/// Accumulate Samples
+	for( itr = 0; itr < SYS_NCALIB_SAMPLES; itr++ )
+	{
+		LSM9DS0_readAccel(&Sys.Imu.hw_base);
+	
+		SetBias_LambdaFilteredSen1f(Sys.Imu.acc_out+0UL,&Sys.Imu.hw_base.ax);
+		SetBias_LambdaFilteredSen1f(Sys.Imu.acc_out+1UL,&Sys.Imu.hw_base.ay);
+		SetBias_LambdaFilteredSen1f(Sys.Imu.acc_out+2UL,&Sys.Imu.hw_base.az);
+	
+		LSM9DS0_readGyro (&Sys.Imu.hw_base);
+	
+		SetBias_LambdaFilteredSen1f(Sys.Imu.gyr_out+0UL,&Sys.Imu.hw_base.gx);
+		SetBias_LambdaFilteredSen1f(Sys.Imu.gyr_out+1UL,&Sys.Imu.hw_base.gy);
+		SetBias_LambdaFilteredSen1f(Sys.Imu.gyr_out+2UL,&Sys.Imu.hw_base.gz);
+	}
+	
+	/// Generate Sample Bias
+	for( itr = 0UL; itr < 3UL; itr++ ) 
+	{
+		KeepBias_LambdaFilteredSen1f(Sys.Imu.acc_out+itr);
+		KeepBias_LambdaFilteredSen1f(Sys.Imu.gyr_out+itr);
+	}
+	
+	
+	/// Accumulate Samples
+	for( itr = 0; itr < SYS_NCALIB_SAMPLES; itr++ )
+	{
+		LSM9DS0_readAccel(&Sys.Imu.hw_base);
+	
+		SetVar_LambdaFilteredSen1f(Sys.Imu.acc_out+0UL,&Sys.Imu.hw_base.ax);
+		SetVar_LambdaFilteredSen1f(Sys.Imu.acc_out+1UL,&Sys.Imu.hw_base.ay);
+		SetVar_LambdaFilteredSen1f(Sys.Imu.acc_out+2UL,&Sys.Imu.hw_base.az);
+	
+		LSM9DS0_readGyro (&Sys.Imu.hw_base);
+	
+		SetVar_LambdaFilteredSen1f(Sys.Imu.gyr_out+0UL,&Sys.Imu.hw_base.gx);
+		SetVar_LambdaFilteredSen1f(Sys.Imu.gyr_out+1UL,&Sys.Imu.hw_base.gy);
+		SetVar_LambdaFilteredSen1f(Sys.Imu.gyr_out+2UL,&Sys.Imu.hw_base.gz);
+	}
+	
+	/// Generate Sample Variance
+	for( itr = 0UL; itr < 3UL; itr++ ) 
+	{
+		KeepVar_LambdaFilteredSen1f(Sys.Imu.acc_out+itr);
+		KeepVar_LambdaFilteredSen1f(Sys.Imu.gyr_out+itr);
+	}
+	
+	/// Print-out
+	const char* axis = "XYZ";
+	for( itr = 0UL; itr < 3UL; itr++ ) 
+		printf( "ACC-%c | M : %f | S : %f\n", axis[itr], Sys.Imu.acc_out[itr].bias , Sys.Imu.acc_out[itr].var );
+	
+	for( itr = 0UL; itr < 3UL; itr++ ) 
+		printf( "GYR-%c | M : %f | S : %f\n", axis[itr], Sys.Imu.gyr_out[itr].bias , Sys.Imu.gyr_out[itr].var	);
+}
+
+void __SysUpdateIMU()
+{
+	if(SYS_TRIGGER_UPDATE(Imu))
+	{		SYS_TRIGGER_RESET(Imu);
+		
+		LSM9DS0_readAccel(&Sys.Imu.hw_base);
+	
+		Update_LambdaFilteredSen1f(Sys.Imu.acc_out+0UL,&Sys.Imu.hw_base.ax);
+		Update_LambdaFilteredSen1f(Sys.Imu.acc_out+1UL,&Sys.Imu.hw_base.ay);
+		Update_LambdaFilteredSen1f(Sys.Imu.acc_out+2UL,&Sys.Imu.hw_base.az);
+	
+		LSM9DS0_readGyro (&Sys.Imu.hw_base);
+	
+		Update_LambdaFilteredSen1f(Sys.Imu.gyr_out+0UL,&Sys.Imu.hw_base.gx);
+		Update_LambdaFilteredSen1f(Sys.Imu.gyr_out+1UL,&Sys.Imu.hw_base.gy);
+		Update_LambdaFilteredSen1f(Sys.Imu.gyr_out+2UL,&Sys.Imu.hw_base.gz);
+	}
+}
+
+
+
+void __SysInitMotors()
+{
+	Sys.Motors.omega_l = 
+	Sys.Motors.omega_r = 0.0f;
+	
+	Init_Dual_MC339xx();
+}
+
+
+void __SysUpdateMotors()
+{
+	if(SYS_TRIGGER_UPDATE(Motors))
+	{	SYS_TRIGGER_RESET(Motors);
+		Cmd_Dual_MC339xx(Sys.Motors.omega_l,Sys.Motors.omega_r);
+	}
+}
+
+
+void __SysInitCmd()
+{
+	Sys.Cmd.dt 		= 0.f;
+	Sys.Cmd.pitch = 0.f;
+}
+
+
+
+#define CMD_G 	0.2f
+#define K_P 		5.0f
+#define K_D 		0.5f
+
+static float32_t cmd_out = 0.f;
+
+void __SysUpdateCmd()
+{
+	float a_mag;
+	float ya_mag;
+	float new_pitch;
+	
+	if(SYS_TRIGGER_UPDATE(Cmd))
+	{	
+		Sys.Cmd.dt = 0.25f*( (float32_t)(Sys.Time.ticks[tNow]-Sys.Cmd.uticks)/1000.f - Sys.Cmd.dt);
+		SYS_TRIGGER_RESET(Cmd);
+		
+		a_mag 						 = sqrtf( powf(Sys.Imu.acc_out[nX].out,2.0f) + powf(Sys.Imu.acc_out[nZ].out,2.0f) ); 
+		ya_mag						 = copysignf( (1.0f-sqrtf( powf(Sys.Imu.acc_out[nY].out,2.0f) + powf(Sys.Imu.acc_out[nZ].out,2.0f) )/12.0f), Sys.Imu.acc_out[nY].out); 
+		
+		new_pitch 				 = copysignf( atan2f( Sys.Imu.acc_out[nY].out, a_mag ), Sys.Imu.acc_out[nY].out );
+		Sys.Cmd.pitch 		+= 0.1f*( new_pitch- Sys.Cmd.pitch );
+		
+		
+		cmd_out 				  += CMD_G*( ( K_P*(Sys.Cmd.pitch) - K_D*(Sys.Imu.gyr_out[nY].out-Sys.Imu.gyr_out[nY].bias) ) - cmd_out );
+		
+		if( fabsf(Sys.Cmd.pitch) < M_PI1_4 )
+			Sys.Motors.omega_l =	Sys.Motors.omega_r = cmd_out;
+		else
+			Sys.Motors.omega_l =	Sys.Motors.omega_r = 0.f;
+		
+		printf("%f\n",ya_mag);
+		#if(SYS_SCOPE_ACCEL_ESTS)
+		printf("%f %f %f | %f ; %f\n",
+			Sys.Imu.acc_out[nX].out,
+			Sys.Imu.acc_out[nY].out,
+			Sys.Imu.acc_out[nZ].out,
+			Sys.Cmd.pitch,
+			new_pitch
+		);
+		#endif
+	}
+}
+
+void SysTick_Handler()
+{
+	++Sys.Time.ticks[tNow];
+}
+
+
+void SysLoop()
+{
+	__SysInitIMU();
+	__SysInitMotors();
+	__SysInitCmd();
+	
+	Sys.Imu.period 		= SYS_F_TICKS(500.f);
+	Sys.Cmd.period 		= SYS_F_TICKS(250.f);
+	Sys.Motors.period = SYS_F_TICKS(100.f);
+	
+	for(;;)
+	{
+		__SysUpdateIMU();
+		__SysUpdateCmd();
+		__SysUpdateMotors();
+	}
+}

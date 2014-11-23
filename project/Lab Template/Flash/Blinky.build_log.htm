@@ -1,0 +1,185 @@
+<html>
+<body>
+<pre>
+<h1>µVision Build Log</h1>
+<h2>Project:</h2>
+C:\Users\brian\Desktop\Fall 2014\Embedded Systems\Project\project\Lab Template\Blinky.uvprojx
+Project File Date:  11/12/2014
+
+<h2>Output:</h2>
+Build target 'STM32F407 Flash'
+compiling main.c...
+defines.h(33): warning:  #1-D: last line of file ends without a newline
+  #endif
+LSM9DS0.h(609): warning:  #1-D: last line of file ends without a newline
+  #endif // SFE_LSM9DS0_H //
+AS504x.h(118): warning:  #1-D: last line of file ends without a newline
+  #endif
+MC339xx.h(105): warning:  #1-D: last line of file ends without a newline
+  #endif
+sys.h(81): warning:  #1295-D: Deprecated declaration __SysInitTime - give arg types
+  void          __SysInitTime();
+sys.h(82): warning:  #1295-D: Deprecated declaration __SysInitIMU - give arg types
+  void          __SysInitIMU();
+sys.h(83): warning:  #1295-D: Deprecated declaration __SysInitMotor - give arg types
+  void          __SysInitMotor();
+sys.h(85): warning:  #1295-D: Deprecated declaration __SysUpdateIMU - give arg types
+  void          __SysUpdateIMU();
+sys.h(86): warning:  #1295-D: Deprecated declaration __SysUpdateController - give arg types
+  void          __SysUpdateController();
+sys.h(87): warning:  #1295-D: Deprecated declaration __SysUpdateTime - give arg types
+  void          __SysUpdateTime();
+sys.h(88): warning:  #1295-D: Deprecated declaration __SysUpdateMotor - give arg types
+  void          __SysUpdateMotor();
+sys.h(90): warning:  #1295-D: Deprecated declaration SysLoop - give arg types
+  void SysLoop();
+sys.h(127): warning:  #1-D: last line of file ends without a newline
+  #endif
+main.c(35): warning:  #177-D: variable "msPrev" was declared but never referenced
+  static uint32_t       msPrev = 0;
+main.c(41): warning:  #177-D: variable "encoder" was declared but never referenced
+  static AS504x_t               encoder[2UL];
+main.c: 15 warnings, 0 errors
+compiling sys.c...
+defines.h(33): warning:  #1-D: last line of file ends without a newline
+  #endif
+LSM9DS0.h(609): warning:  #1-D: last line of file ends without a newline
+  #endif // SFE_LSM9DS0_H //
+AS504x.h(118): warning:  #1-D: last line of file ends without a newline
+  #endif
+MC339xx.h(105): warning:  #1-D: last line of file ends without a newline
+  #endif
+sys.h(81): warning:  #1295-D: Deprecated declaration __SysInitTime - give arg types
+  void          __SysInitTime();
+sys.h(82): warning:  #1295-D: Deprecated declaration __SysInitIMU - give arg types
+  void          __SysInitIMU();
+sys.h(83): warning:  #1295-D: Deprecated declaration __SysInitMotor - give arg types
+  void          __SysInitMotor();
+sys.h(85): warning:  #1295-D: Deprecated declaration __SysUpdateIMU - give arg types
+  void          __SysUpdateIMU();
+sys.h(86): warning:  #1295-D: Deprecated declaration __SysUpdateController - give arg types
+  void          __SysUpdateController();
+sys.h(87): warning:  #1295-D: Deprecated declaration __SysUpdateTime - give arg types
+  void          __SysUpdateTime();
+sys.h(88): warning:  #1295-D: Deprecated declaration __SysUpdateMotor - give arg types
+  void          __SysUpdateMotor();
+sys.h(90): warning:  #1295-D: Deprecated declaration SysLoop - give arg types
+  void SysLoop();
+sys.h(127): warning:  #1-D: last line of file ends without a newline
+  #endif
+sys.c(294): warning:  #223-D: function "printf" declared implicitly
+                printf( "ACC-%c | M : %f | S : %f\n", axis[itr], Sys.Imu.acc_out[itr].bias , Sys.Imu.acc_out[itr].var );
+sys.c(297): warning:  #223-D: function "printf" declared implicitly
+                printf( "GYR-%c | M : %f | S : %f\n", axis[itr], Sys.Imu.gyr_out[itr].bias , Sys.Imu.gyr_out[itr].var   );
+sys.c(309): warning:  #223-D: function "printf" declared implicitly
+        printf("SET POINT TARGET %f\n",Sys.Cmd.pitch_setpoint);
+sys.c(227): warning:  #177-D: variable "jtr" was declared but never referenced
+        uint32_t itr, jtr;
+sys.c(315): warning:  #550-D: variable "mdt" was set but never used
+        float32_t mdt;
+sys.c(447): warning:  #177-D: variable "d_error" was declared but never referenced
+        static float32_t d_error = 0.f, int_error = 0.f;
+sys.c(447): warning:  #177-D: variable "int_error" was declared but never referenced
+        static float32_t d_error = 0.f, int_error = 0.f;
+sys.c(548): warning:  #1-D: last line of file ends without a newline
+  }
+sys.c(443): warning:  #177-D: variable "cmd_out" was declared but never referenced
+  static float32_t cmd_out = 0.f;
+sys.c: 22 warnings, 0 errors
+linking...
+Program Size: Code=20712 RO-data=744 RW-data=52 ZI-data=2132  
+".\Flash\Blinky.axf" - 0 Error(s), 37 Warning(s).
+
+<h2>Software Packages used:</h2>
+
+Package Vendor: ARM
+                http://www.keil.com/pack/ARM.CMSIS.4.1.0.pack
+                ARM::CMSIS:CORE:3.30.0
+                CMSIS (Cortex Microcontroller Software Interface Standard)
+   * Component: CORE Version: 3.30.0
+   * Component: DSP Version: 1.4.2
+
+Package Vendor: Keil
+                http://www.keil.com/pack/Keil.STM32F4xx_DFP.1.0.8.pack
+                Keil::Device:Startup:1.3.1
+                STMicroelectronics STM32F4 Series Device Support, Drivers and Examples
+   * Component: Startup Version: 1.3.1
+   * Component: Framework Version: 1.3.1
+   * Component: ADC Version: 1.3.0
+   * Component: EXTI Version: 1.3.0
+   * Component: GPIO Version: 1.3.0
+   * Component: RCC Version: 1.3.0
+   * Component: RNG Version: 1.3.0
+   * Component: SPI Version: 1.3.0
+   * Component: SYSCFG Version: 1.3.0
+   * Component: TIM Version: 1.3.0
+
+<h2>Collection of Component include folders:</h2>
+  C:\Users\brian\Desktop\Fall 2014\Embedded Systems\Project\project\Lab Template\RTE
+  C:\Users\brian\Desktop\Fall 2014\Embedded Systems\Project\project\Lab Template\RTE\Device\STM32F407VG
+  C:\Keil_v5\ARM\PACK\ARM\CMSIS\4.1.0\CMSIS\Include
+  C:\Keil_v5\ARM\PACK\Keil\STM32F4xx_DFP\1.0.8\Device\Include
+  C:\Keil_v5\ARM\PACK\Keil\STM32F4xx_DFP\1.0.8\Device\StdPeriph_Driver\inc
+
+<h2>Collection of Component Files used:</h2>
+
+   * Component: ARM::CMSIS:CORE:3.30.0
+      Source file:   CMSIS\UserCodeTemplates\ARM\ITM_Retarget.c
+
+   * Component: ARM::CMSIS:DSP:1.4.2
+      Include file:  CMSIS\Include\arm_math.h
+      Library file:  CMSIS\Lib\ARM\arm_cortexM4lf_math.lib
+
+   * Component: Keil::Device:Startup:1.3.1
+      Source file:   Device\Source\ARM\STM32F40xxx_41xxx_OPT.s
+      Source file:   Device\Source\ARM\STM32F4xx_OTP.s
+      Include file:  Device\Include\stm32f4xx.h
+      Source file:   Device\Source\ARM\startup_stm32f40_41xxx.s
+      Source file:   Device\Source\system_stm32f4xx.c
+      Include file:  RTE_Driver\Config\RTE_Device.h
+
+   * Component: Keil::Device:StdPeriph Drivers:Framework:1.3.1
+      Source file:   Device\StdPeriph_Driver\src\misc.c
+      Source file:   Device\StdPeriph_Driver\templates\stm32f4xx_conf.h
+      Include file:  Device\StdPeriph_Driver\templates\stm32f4xx_it.h
+      Source file:   Device\StdPeriph_Driver\templates\stm32f4xx_it.c
+
+   * Component: Keil::Device:StdPeriph Drivers:ADC:1.3.0
+      Include file:  Device\StdPeriph_Driver\inc\stm32f4xx_adc.h
+      Source file:   Device\StdPeriph_Driver\src\stm32f4xx_adc.c
+
+   * Component: Keil::Device:StdPeriph Drivers:EXTI:1.3.0
+      Include file:  Device\StdPeriph_Driver\inc\stm32f4xx_exti.h
+      Source file:   Device\StdPeriph_Driver\src\stm32f4xx_exti.c
+
+   * Component: Keil::Device:StdPeriph Drivers:GPIO:1.3.0
+      Include file:  Device\StdPeriph_Driver\inc\stm32f4xx_gpio.h
+      Source file:   Device\StdPeriph_Driver\src\stm32f4xx_gpio.c
+
+   * Component: Keil::Device:StdPeriph Drivers:RCC:1.3.0
+      Include file:  Device\StdPeriph_Driver\inc\stm32f4xx_rcc.h
+      Source file:   Device\StdPeriph_Driver\src\stm32f4xx_rcc.c
+
+   * Component: Keil::Device:StdPeriph Drivers:RNG:1.3.0
+      Include file:  Device\StdPeriph_Driver\inc\stm32f4xx_rng.h
+      Source file:   Device\StdPeriph_Driver\src\stm32f4xx_rng.c
+
+   * Component: Keil::Device:StdPeriph Drivers:SPI:1.3.0
+      Include file:  Device\StdPeriph_Driver\inc\stm32f4xx_spi.h
+      Source file:   Device\StdPeriph_Driver\src\stm32f4xx_spi.c
+
+   * Component: Keil::Device:StdPeriph Drivers:SYSCFG:1.3.0
+      Include file:  Device\StdPeriph_Driver\inc\stm32f4xx_syscfg.h
+      Source file:   Device\StdPeriph_Driver\src\stm32f4xx_syscfg.c
+
+   * Component: Keil::Device:StdPeriph Drivers:TIM:1.3.0
+      Include file:  Device\StdPeriph_Driver\inc\stm32f4xx_tim.h
+      Source file:   Device\StdPeriph_Driver\src\stm32f4xx_tim.c
+Load "C:\\Users\\brian\\Desktop\\Fall 2014\\Embedded Systems\\Project\\project\\Lab Template\\Flash\\Blinky.axf" 
+Erase Done.
+Programming Done.
+Verify OK.
+Application running ...
+</pre>
+</body>
+</html>

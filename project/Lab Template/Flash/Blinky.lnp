@@ -1,0 +1,25 @@
+--cpu Cortex-M4.fp
+".\flash\fputc_def.o"
+".\flash\main.o"
+".\flash\tm_stm32f4_lis302dl_lis3dsh.o"
+".\flash\tm_stm32f4_spi.o"
+".\flash\as504x.o"
+".\flash\lsm9ds0.o"
+".\flash\sys.o"
+".\flash\mc339xx.o"
+"C:\Keil_v5\ARM\PACK\ARM\CMSIS\4.1.0\CMSIS\Lib\ARM\arm_cortexM4lf_math.lib"
+".\flash\system_stm32f4xx.o"
+".\flash\startup_stm32f40_41xxx.o"
+".\flash\misc.o"
+".\flash\stm32f4xx_exti.o"
+".\flash\stm32f4xx_gpio.o"
+".\flash\stm32f4xx_rcc.o"
+".\flash\stm32f4xx_syscfg.o"
+".\flash\stm32f4xx_adc.o"
+".\flash\stm32f4xx_rng.o"
+".\flash\stm32f4xx_spi.o"
+".\flash\stm32f4xx_tim.o"
+--library_type=microlib --strict --scatter ".\Flash\Blinky.sct"
+--summary_stderr --info summarysizes --map --xref --callgraph --symbols
+--info sizes --info totals --info unused --info veneers
+--list ".\Flash\Blinky.map" -o .\Flash\Blinky.axf
